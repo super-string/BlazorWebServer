@@ -11,5 +11,7 @@ namespace BlazorWebServer.Shared
         public GitHub() { }
 
         public string? Name { get; set; }
+        public int? Views { get; set; }
+        public int? Clones { get; set; }
     }
 }

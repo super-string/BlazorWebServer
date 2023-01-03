@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddHttpClient("GitHub", client =>
+builder.Services.AddHttpClient("GitHubRestApi", client =>
 {
     client.BaseAddress = new Uri("http://localhost:8080");
 });

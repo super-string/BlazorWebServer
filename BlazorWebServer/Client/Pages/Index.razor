@@ -2,20 +2,21 @@
 @using BlazorWebServer.Shared;
 @inject IHttpClientFactory Factory
 
-<PageTitle>Index</PageTitle>
+<PageTitle>GitHub Traffic</PageTitle>
 
-<button id="test" @onclick="OnClick">test</button>
+<button id="githubtraffic" @onclick="OnClick">Get</button>
 
 @if (forecasts == null)
 {
-    <p><em>Loading...</em></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>Repos</th>
+                <th>Views</th>
+                <th>Clones</th>
             </tr>
         </thead>
         <tbody>
@@ -23,6 +24,8 @@ else
             {
                 <tr>
                     <td>@forecast?.Name</td>
+                    <td>@forecast?.Views</td>
+                    <td>@forecast?.Clones</td>
                 </tr>
             }
         </tbody>

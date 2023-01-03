@@ -8,14 +8,21 @@ namespace BlazorWebServer.Server.Controllers
     [ApiController]
     public class GitHubController : ControllerBase
     {
+        private readonly HttpClient _client;
+        public GitHubController(IHttpClientFactory factory)
+        {
+            _client = factory.CreateClient("GitHubRestApi");
+        }
         [HttpGet]
         public IEnumerable<GitHub> Get()
         {
-            return new List<GitHub>()
-            {
-                new GitHub(){Name = "hoge"},
-                new GitHub(){Name = "piyo"},
-            }.ToArray();
+            return GetAsync().Result;
+        }
+
+        private async Task<IEnumerable<GitHub>> GetAsync()
+        {
+            var ret = await _client.GetAsync("/traffic");
+            return await ret.Content.ReadFromJsonAsync<GitHub[]>();
         }
     }
 }
