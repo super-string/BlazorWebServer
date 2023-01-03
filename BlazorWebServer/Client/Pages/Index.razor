@@ -1,0 +1,44 @@
+﻿@page "/"
+@using BlazorWebServer.Shared;
+@inject IHttpClientFactory Factory
+
+<PageTitle>Index</PageTitle>
+
+<button id="test" @onclick="OnClick">test</button>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast?.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private GitHub[]? forecasts;
+    private HttpClient _client;
+    protected override async Task OnInitializedAsync()
+    {
+        _client = Factory.CreateClient("GitHub");
+        await base.OnInitializedAsync();
+    }
+    private async Task OnClick(MouseEventArgs e)
+    {
+        forecasts = await _client.GetFromJsonAsync<GitHub[]>("api/GitHub");
+    }
+}
