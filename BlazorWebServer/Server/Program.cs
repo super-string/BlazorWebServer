@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.ResponseCompression;
+using System.Net.Http.Headers;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +8,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient("GitHubRestApi", client =>
 {
     client.BaseAddress = new Uri("http://localhost:8080");
+});
+builder.Services.AddHttpClient("HatenaEntry", client =>
+{
+    client.BaseAddress = new Uri("https://blog.hatena.ne.jp/super-string/super-string.hatenablog.com/atom/");
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+        "Basic",
+        Convert.ToBase64String(Encoding.UTF8.GetBytes("super-string:xxxxxxx"))
+        );
 });
 
 builder.Services.AddControllersWithViews();

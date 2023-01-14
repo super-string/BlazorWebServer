@@ -1,0 +1,121 @@
+﻿@page "/hatena"
+@using System.Xml.Serialization;
+@using System.Xml;
+@using Microsoft.SyndicationFeed.Atom;
+@using Microsoft.SyndicationFeed;
+@inject IHttpClientFactory Factory
+
+<h3>Hatena</h3>
+<button id="hatena" @onclick="OnClick">get</button>
+<input id="filter" @onchange="OnFilterTextChange"></input>
+@if (_items == null)
+{
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in _items)
+            {
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private HttpClient _client;
+    private string _filter;
+
+    private List<AtomEntry> _items = new();
+    private List<AtomEntry> _original;
+    protected override async Task OnInitializedAsync()
+    {
+        _client = Factory.CreateClient("HatenaEntry");
+        await base.OnInitializedAsync();
+    }
+
+    private async void OnFilterTextChange(ChangeEventArgs e)
+    {
+        _filter = (string)e.Value;
+
+        void Func()
+        {
+            var a = new List<AtomEntry>();
+            foreach (var item in _original)
+            {
+                if (item.Description == null) continue;
+                if (item.Description.Contains(_filter))
+                {
+                    a.Add(item);
+                }
+            }
+            _items = a;
+        }
+
+        await Task.Run(() => Func());
+        StateHasChanged();
+    }
+
+    private async void OnClick(MouseEventArgs e)
+    {
+        var stream = await _client.GetStreamAsync("api/HatenaEntry");
+
+        _original = new List<AtomEntry>();
+        using (var xmlReader = XmlReader.Create(stream, new XmlReaderSettings() { Async = true }))
+        {
+            var feedReader = new AtomFeedReader(xmlReader);
+
+            while (await feedReader.Read())
+            {
+                switch (feedReader.ElementType)
+                {
+                    // Read category
+                    case SyndicationElementType.Category:
+                        ISyndicationCategory category = await feedReader.ReadCategory();
+                        break;
+
+                    // Read Image
+                    case SyndicationElementType.Image:
+                        ISyndicationImage image = await feedReader.ReadImage();
+                        break;
+
+                    // Read Item
+                    case SyndicationElementType.Item:
+                        if (await feedReader.ReadItem() is AtomEntry entry)
+                        {
+                            _original.Add(entry);
+                        }
+                        break;
+
+                    // Read link
+                    case SyndicationElementType.Link:
+                        ISyndicationLink link = await feedReader.ReadLink();
+                        break;
+
+                    // Read Person
+                    case SyndicationElementType.Person:
+                        ISyndicationPerson person = await feedReader.ReadPerson();
+                        break;
+
+                    // Read content
+                    default:
+                        ISyndicationContent content = await feedReader.ReadContent();
+                        break;
+                }
+            }
+        }
+        _items.Clear();
+        _items.AddRange(_original);
+        StateHasChanged();
+    }
+
+}
